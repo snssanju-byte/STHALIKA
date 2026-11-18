@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sthalika - My Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<style>
+*{box-sizing:border-box;font-family:'Poppins',sans-serif}
+body{margin:0;background:#f4f6fb;padding:0;padding-bottom:90px;color:#1a1a1a}
+h1{font-size:24px;font-weight:800;text-align:center;margin:10px 0 2px}
+.sub{text-align:center;color:#777;font-size:13px;margin-bottom:14px}
+.topbar{display:flex;gap:8px;margin:0 14px 14px}
+.topbar input{flex:1;padding:13px 16px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,0.04);outline:none}
+.topbar input:focus{border-color:#16a34a}
+.cat{display:flex;gap:8px;overflow:auto;margin:0 14px 14px;padding-bottom:4px;scrollbar-width:none}
+.cat::-webkit-scrollbar{display:none}
+.cat button{padding:9px 16px;border-radius:100px;background:#fff;border:1px solid #e5e7eb;white-space:nowrap;font-weight:600;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.cat button.active{background:#111;color:#fff;border-color:#111;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+.card{background:#fff;border-radius:18px;padding:14px;margin:0 14px 12px;display:flex;justify-content:space-between;gap:10px;box-shadow:0 3px 14px rgba(0,0,0,0.06);border:1px solid #f0f0f0}
+.card.added{border:2px solid #16a34a;background:#f0fdf4}
+.card h3{margin:0;font-size:15px;font-weight:600;line-height:1.3}
+.card p{margin:5px 0;color:#888;font-size:12.5px}
+.price{font-size:18px;font-weight:800;color:#111}
+.qty{display:flex;align-items:center;gap:10px;margin-top:10px;justify-content:flex-end}
+.qty button{width:34px;height:34px;border-radius:100px;border:1px solid #e5e7eb;background:#fff;font-size:20px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+.qty b{font-size:15px}
+.addBtn{width:100%;padding:13px;border:0;border-radius:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;font-weight:700;font-size:14px;margin-top:8px;box-shadow:0 6px 16px rgba(22,163,74,0.3);cursor:pointer}
+.addBtn:active{transform:scale(0.98)}
+.addBtn.added{background:#111;box-shadow:0 6px 16px rgba(0,0,0,0.2)}
+.addBtn:disabled{opacity:0.5}
+.out{background:#fee2e2;color:#b91c1c;padding:5px 10px;border-radius:100px;font-size:11px;font-weight:600}
+.addedBadge{background:#16a34a;color:#fff;padding:5px 10px;border-radius:100px;font-size:11px;font-weight:600;display:inline-block;margin-top:6px}
+.nav{position:fixed;bottom:12px;left:12px;right:12px;background:#fff;display:flex;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,0.15);padding:6px;z-index:99}
+.nav button{flex:1;padding:12px 0;border:0;background:transparent;font-weight:700;font-size:13px;border-radius:14px;color:#888}
+.nav button.active{background:#ecfdf5;color:#16a34a}
+.hidden{display:none}
+input{width:100%;padding:12px;margin:6px 0;border:1px solid #e5e7eb;border-radius:12px;font-size:14px;outline:none}
+.orderCard{background:#fff;padding:14px;border-radius:16px;margin:0 14px 12px;box-shadow:0 3px 14px rgba(0,0,0,0.06);line-height:1.6;font-size:14px}
+.msg{padding:12px;border-radius:12px;background:#dcfce7;color:#166534;font-weight:700;text-align:center;margin:8px 14px;display:none}
+.msg.error{background:#fee2e2;color:#991b1b}
+.successBox{background:#fff;border:2px solid #16a34a;padding:18px;border-radius:20px;text-align:center;margin:10px 14px;display:none;box-shadow:0 10px 30px rgba(22,163,74,0.15)}
+.successBox h2{margin:0;color:#166534;font-size:22px}
+.shopInfo{background:linear-gradient(135deg,#fef9c3,#fef08a);padding:16px;border-radius:16px;border:1px solid #fde047;text-align:center;line-height:1.6;margin:10px 14px;box-shadow:0 4px 14px rgba(250,204,21,0.25)}
+.totalBox{background:linear-gradient(135deg,#16a34a,#15803d);padding:16px;border-radius:16px;text-align:center;margin:14px;font-size:24px;font-weight:800;color:#fff;box-shadow:0 8px 20px rgba(22,163,74,0.35);letter-spacing:0.5px}
+.totalBoxSmall{background:#dcfce7;padding:11px;border-radius:12px;border:1px solid #16a34a;text-align:center;font-size:17px;font-weight:800;margin-top:10px;color:#166534}
+.headerTop{background:linear-gradient(135deg,#16a34a,#15803d,#166534);color:#fff;padding:18px 14px 16px;border-radius:0 0 24px 24px;margin-bottom:14px;box-shadow:0 8px 20px rgba(22,163,74,0.25)}
+.headerTop h1{color:#fff;margin:0}
+.headerTop .sub{color:#dcfce7;margin:4px 0 0}
+.loginCard{background:#fff;margin:20px 16px;padding:28px 20px;border-radius:24px;box-shadow:0 15px 40px rgba(0,0,0,0.1);text-align:center}
+.loginCard h2{font-size:26px;margin:0}
+.loginCard p{color:#888;font-size:13px}
+.placeBtn{position:relative;overflow:hidden;width:100%;padding:16px;border:0;border-radius:16px;background:linear-gradient(135deg,#2563eb,#1d4ed8,#1e40af);color:#fff;font-weight:800;font-size:17px;margin-top:8px;box-shadow:0 10px 25px rgba(37,99,235,0.45);cursor:pointer;letter-spacing:0.5px}
+.placeBtn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,0.6),transparent);transform:skewX(-20deg);animation:shine 2s infinite}
+@keyframes shine{0%{left:-80%}60%{left:130%}100%{left:130%}}
+.placeBtn:active{transform:scale(0.98)}
+.placeBtn:disabled{opacity:0.5}
+.shopStatusBanner{margin:0 14px 12px;padding:13px;border-radius:14px;text-align:center;font-weight:700;font-size:14px;line-height:1.5}
+.shopStatusBanner.open{background:#dcfce7;color:#166534;border:1px solid #16a34a}
+.shopStatusBanner.closed{background:#fee2e2;color:#991b1b;border:1px solid #ef4444}
+.shopStatusBanner small{display:block;font-weight:500;font-size:12px;margin-top:3px}
+</style>
+</head>
+<body>
+
+<div id="loginPage">
+  <div class="headerTop"><h1>Sthalika</h1><div class="sub">Disposable Items • Best Price • Dombivli</div></div>
+  <div class="loginCard">
+    <h2>Welcome 👋</h2>
+    <p>Please login to place your order</p>
+    <input id="loginName" type="text" placeholder="Enter Your Name">
+    <input id="loginMobile" type="number" placeholder="Enter Mobile Number">
+    <button class="addBtn" onclick="customerLogin()">Login & Order →</button>
+    <p style="font-size:12px;margin-top:14px">Shop No. C-02, Sthalika, Asha Garden,<br>Nr Patel R Mart, Subhash Rd, Dombivli West<br><b>9820854690 / 9619016682</b></p>
+  </div>
+</div>
+
+<div id="shopPage" style="display:none;">
+<div id="shopView">
+<div class="headerTop"><h1>My Shop</h1><div class="sub">Disposable Items • Best Price</div></div>
+<div id="shopStatusBanner" class="shopStatusBanner open">🟢 Shop OPEN<br><small>Timing: 10 AM - 2 PM &nbsp;|&nbsp; 5 PM - 9 PM</small></div>
+<div id="topMsg" class="msg"></div>
+<div id="successBox" class="successBox"><h2>✅ Thank You!</h2><p id="successText"></p><button class="addBtn" style="background:#111;box-shadow:0 6px 16px rgba(0,0,0,0.2)" onclick="hideSuccess()">OK</button></div>
+<div class="topbar"><input id="search" placeholder="🔍 Search item... Balloon, Candle, Plate" oninput="render()"></div>
+<div class="cat" id="cats"></div>
+<div id="list"><p style="text-align:center">Loading items from shop...</p></div>
+</div>
+<div id="cartView" class="hidden">
+<div class="headerTop"><h1>Your Order</h1><div class="sub">Review & Place Order</div></div>
+<div id="shopStatusBannerCart" class="shopStatusBanner open">🟢 Shop OPEN<br><small>Timing: 10 AM - 2 PM &nbsp;|&nbsp; 5 PM - 9 PM</small></div>
+<div id="cartMsg" class="msg"></div>
+<div id="cartList"></div>
+<div style="padding:0 14px"><button id="placeOrderBtn" class="placeBtn" onclick="placeOrder()">✨ Place Order →</button>
+<button class="addBtn" style="background:#111;box-shadow:0 6px 16px rgba(0,0,0,0.2)" onclick="showShop()">Continue Shopping</button></div>
+</div>
+<div id="myOrdersView" class="hidden">
+<div class="headerTop"><h1>My Orders</h1><div class="sub">Your all orders will show here</div></div>
+<div class="shopInfo">
+<b style="font-size:16px;">📦 Please Collect Your Order From Shop</b><br><br>
+Shop No. C-02, Sthalika, Asha Garden,<br>
+Nr Patel R Mart, Subhash Rd,<br>
+Dombivli West<br><br>
+<b>Contact No. : 9820854690 / 9619016682</b>
+</div>
+<input id="myPhone" type="hidden">
+<div id="myOrdersList" style="margin-top:12px"></div>
+</div>
+<div class="nav">
+<button id="navShop" class="active" onclick="showShop()">🏠 Shop</button>
+<button id="navCart" onclick="showCart()">🛒 Cart (<span id="cartCount">0</span>)</button>
+<button id="navOrders" onclick="showMyOrders()">📦 My Orders</button>
+</div>
+</div>
+
+<script>
+var firebaseConfig = {apiKey: "AIzaSyAlwujqoMgNb_RBqKCCpnPsBkkwAaEz830",authDomain: "my-shop-3691e.firebaseapp.com",databaseURL: "https://my-shop-3691e-default-rtdb.firebaseio.com",projectId: "my-shop-3691e",storageBucket: "my-shop-3691e.firebasestorage.app",messagingSenderId: "482144505058",appId: "1:482144505058:web:08aacac6e75004d269e2bb"};
+firebase.initializeApp(firebaseConfig);
+let dbRef = firebase.database().ref("orders");
+let counterRef = firebase.database().ref("orderCounter");
+let itemsRef = firebase.database().ref("shopItems");
+let customersRef = firebase.database().ref("customers");
+// FIX: Ab koi purani default list nahi hai. Sirf Firebase se list aayegi. Owner = Customer, 100% same.
+let items = [];
+let cart = JSON.parse(localStorage.getItem("myCart")||"[]");
+let activeCat="All";
+let allOrders = [];
+let isPlacing = false;
+function isWithinTiming(){let now=new Date();let mins=now.getHours()*60+now.getMinutes();return (mins>=600&&mins<840)||(mins>=1020&&mins<1260);}
+function getNextOpenText(){let mins=new Date().getHours()*60+new Date().getMinutes();if(mins<600)return "Opens Today at 10 AM";if(mins<1020)return "Opens Today at 5 PM";return "Opens Tomorrow at 10 AM";}
+function isShopOpen(){return isWithinTiming();}
+function updateShopBanner(){let open=isShopOpen();[document.getElementById("shopStatusBanner"),document.getElementById("shopStatusBannerCart")].forEach(function(b){if(!b)return;if(open){b.className="shopStatusBanner open";b.innerHTML="🟢 Shop OPEN<br><small>Timing: 10 AM - 2 PM &nbsp;|&nbsp; 5 PM - 9 PM</small>";}else{b.className="shopStatusBanner closed";b.innerHTML="🔴 Shop is Closed Now<br><small>"+getNextOpenText()+" • Timing: 10 AM - 2 PM &nbsp;|&nbsp; 5 PM - 9 PM</small>";}});let pb=document.getElementById("placeOrderBtn");if(pb){pb.disabled=!open;pb.innerText=open?"✨ Place Order →":"🔴 Shop Closed - Cannot Order Now";}}
+setInterval(updateShopBanner,30000);
+itemsRef.on("value", function(snap){
+  let data = snap.val();
+  if(data){ items = Object.keys(data).map(k=>{let o=data[k]; o._key=k; return o;}); } else { items = []; }
+  // Purana cart saaf karo agar usme ab delete hua item hai
+  let validIds = items.map(i=>String(i.id));
+  let newCart = cart.filter(c=> validIds.includes(String(c.id)));
+  if(newCart.length != cart.length){ cart = newCart; save(); }
+  render();
+});
+dbRef.on("value", function(snap){
+  let data = snap.val();
+  allOrders = data ? Object.keys(data).map(k=>{let o=data[k]; o._key=k; return o;}) : [];
+});
+function save(){localStorage.setItem("myCart",JSON.stringify(cart));}
+function showMsg(id,text,isError){let el=document.getElementById(id);el.style.display="block";el.innerText=text;el.className="msg"+(isError?" error":"");setTimeout(()=>{el.style.display="none";},4000);}
+function showPermanentMsg(id,text){let el=document.getElementById(id);el.style.display="block";el.innerText=text;el.className="msg error";}
+function getCartQty(id){let c=cart.find(x=>x.id==id);return c?c.qty:0;}
+function render(){
+  updateShopBanner();
+  if(!items.length){ document.getElementById("list").innerHTML="<p style='text-align:center'>Loading items from shop...<br>Thoda wait karo</p>"; document.getElementById("cats").innerHTML=""; return; }
+  let q=document.getElementById("search").value.toLowerCase();
+  let cats=["All",...new Set(items.map(i=>i.cat))];
+  document.getElementById("cats").innerHTML=cats.map(c=>`<button class="${c==activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join("");
+  let filtered=items.filter(i=>(activeCat=="All"||i.cat==activeCat)&&i.name.toLowerCase().includes(q));
+  let shopOpen=isShopOpen();
+  document.getElementById("list").innerHTML=filtered.map(i=>{let cq=getCartQty(i.id);let isAdded=cq>0;return `<div class="card ${isAdded?'added':''}"><div><h3>${i.name}</h3><p>${i.pcs} • ${i.cat}</p>${i.stock?'':'<span class="out">Out of Stock</span>'}${isAdded?`<span class="addedBadge">✓ Added - ${cq} in Cart</span>`:''}</div><div style="text-align:right;min-width:115px"><div class="price">₹ ${i.price}</div>${!i.stock?'':!shopOpen?`<button class="addBtn" disabled style="background:#999">🔴 Closed</button>`:isAdded?`<div class="qty"><button onclick="changeCartQty(${i.id},-1)">-</button><b>${cq}</b><button onclick="changeCartQty(${i.id},1)">+</button></div><button class="addBtn added" onclick="showCart()">View Cart</button>`:`<button class="addBtn" onclick="addToCart(${i.id},1)">+ Add</button>`}</div></div>`}).join("")||"<p style='text-align:center'>No item found</p>";
+  document.getElementById("cartCount").innerText=cart.reduce((a,b)=>a+b.qty,0);
+}
+function setCat(c){activeCat=c;render();}
+function addToCart(id,qty){if(!isShopOpen()){alert("Shop is Closed Now. Timing: 10 AM - 2 PM | 5 PM - 9 PM");return;}let ex=cart.find(c=>c.id==id);if(ex)ex.qty+=qty;else cart.push({id,qty:qty});save();render();}
+function changeCartQty(id,d){let ex=cart.find(c=>c.id==id);if(!ex)return;ex.qty+=d;if(ex.qty<=0)cart=cart.filter(c=>c.id!=id);save();render();}
+function hideAll(){document.getElementById("shopView").classList.add("hidden");document.getElementById("cartView").classList.add("hidden");document.getElementById("myOrdersView").classList.add("hidden");document.getElementById("navShop").classList.remove("active");document.getElementById("navCart").classList.remove("active");document.getElementById("navOrders").classList.remove("active");}
+function showShop(){hideAll();document.getElementById("shopView").classList.remove("hidden");document.getElementById("navShop").classList.add("active");render();}
+function showCart(){hideAll();document.getElementById("cartView").classList.remove("hidden");document.getElementById("navCart").classList.add("active");updateShopBanner();let total=0;document.getElementById("cartList").innerHTML=cart.map(c=>{let it=items.find(i=>i.id==c.id);if(!it) return "";let t=it.price*c.qty;total+=t;return `<div class="orderCard"><b>${it.name}</b><br>${it.pcs} x ${c.qty} = ₹ ${t} <br><div class="qty" style="justify-content:flex-start"><button onclick="changeCartQtyFromCart(${c.id},-1)">-</button><b>${c.qty}</b><button onclick="changeCartQtyFromCart(${c.id},1)">+</button> <button onclick="removeCart(${c.id})" style="width:auto;padding:0 12px;font-size:13px;border-radius:100px">Remove</button></div></div>`}).join("")||"<p style='text-align:center'>Cart is empty</p>";if(cart.length)document.getElementById("cartList").innerHTML+=`<div class="totalBox">TOTAL : ₹ ${total}</div>`;}
+function showMyOrders(){hideAll();document.getElementById("myOrdersView").classList.remove("hidden");document.getElementById("navOrders").classList.add("active");let savedPhone=localStorage.getItem("sthalikaMobile");if(savedPhone){document.getElementById("myPhone").value=savedPhone;loadMyOrders();}else{document.getElementById("myOrdersList").innerHTML="<p style='text-align:center'>Please login again</p>";}}
+function changeCartQtyFromCart(id,d){changeCartQty(id,d);showCart();}
+function removeCart(id){cart=cart.filter(c=>c.id!=id);save();showCart();render();}
+function hideSuccess(){document.getElementById("successBox").style.display="none";}
+function loadMyOrders(){
+  let phone = document.getElementById("myPhone").value.trim() || localStorage.getItem("sthalikaMobile") || "";
+  if(!phone){ document.getElementById("myOrdersList").innerHTML="<p style='text-align:center'>Please login again</p>"; return; }
+  document.getElementById("myPhone").value = phone;
+  let mine = allOrders.filter(o=>o.phone==phone).reverse();
+  if(!mine.length){ document.getElementById("myOrdersList").innerHTML="<p style='text-align:center'>No order found yet</p>"; return; }
+  document.getElementById("myOrdersList").innerHTML = mine.map((o,idx)=>{
+    let num = o.orderNo || (allOrders.indexOf(o)+1);
+    return `<div class="orderCard"><b>Order #${num}</b> - ${o.date}<br>Name: ${o.name}<br>${o.items}<br><div class="totalBoxSmall">TOTAL : ₹ ${o.total}</div>Status: ${o.status}</div>`;
+  }).join("");
+}
+function getPendingOrder(phone){
+  return allOrders.find(o=> o.phone==phone && o.status==="New");
+}
+function placeOrder(){
+  if(isPlacing) return;
+  if(!isShopOpen()){showMsg("cartMsg","Shop is Closed Now. Timing: 10 AM - 2 PM | 5 PM - 9 PM",true);return;}
+  if(!cart.length){showMsg("cartMsg","Cart is empty",true);return;}
+  let name=localStorage.getItem("sthalikaName");
+  let phone=localStorage.getItem("sthalikaMobile");
+  if(!name||!phone){showMsg("cartMsg","Please login again",true);return;}
+  let pending = getPendingOrder(phone);
+  if(pending){
+    showPermanentMsg("cartMsg","Please collect your placed order first. Check My Orders - Order #"+pending.orderNo+" abhi New me hai.");
+    return;
+  }
+  let total=0, txt="", hasError=false;
+  cart.forEach(c=>{
+    let it=items.find(i=>i.id==c.id || String(i.id)==String(c.id));
+    if(!it){ hasError=true; return; }
+    let t=it.price*c.qty; total+=t;
+    txt+=`${it.name} (${it.pcs}) x ${c.qty} = ₹ ${t}<br>`;
+  });
+  if(hasError){
+    cart=[]; save(); render(); showMsg("cartMsg","Cart me purana item tha, cart clear kar diya. Fir se item add karo.",true); showShop(); return;
+  }
+  if(total<=0){ showMsg("cartMsg","Cart me kuch gadbad hai, fir se add karo",true); return; }
+  isPlacing=true;
+  let btn=document.getElementById("placeOrderBtn"); if(btn){ btn.disabled=true; btn.innerText="Placing Order..."; }
+  counterRef.transaction(function(current){ return (current || 0) + 1; }, function(error, committed, snapshot){
+    isPlacing=false;
+    if(btn){ btn.disabled=false; btn.innerText="✨ Place Order →"; updateShopBanner(); }
+    if(error || !committed){ showMsg("cartMsg","Please try again - Network issue",true); return; }
+    let orderNo = snapshot.val();
+    let newOrder={orderNo:orderNo, name, phone, items:txt, total, status:"New", date:new Date().toLocaleString("en-IN")};
+    dbRef.push(newOrder, function(err){
+      if(err){ showMsg("cartMsg","Order fail ho gaya, fir se try karo",true); return; }
+      cart=[]; save(); render(); showShop();
+      let sb=document.getElementById("successBox");
+      sb.style.display="block";
+      document.getElementById("successText").innerHTML = "<br><b style='font-size:20px;'>Thank You! Your Order Has Been Placed.</b><br><br><b>Order No. : #" + orderNo + "</b><br><br><div class='totalBox'>TOTAL : ₹ " + total + "</div><br><div style='background:linear-gradient(135deg,#fef9c3,#fef08a); padding:14px; border-radius:16px; border:1px solid #fde047; text-align:center; line-height:1.6;'><b style='font-size:16px;'>📦 Please Collect Your Order From Shop</b><br><br>Shop No. C-02, Sthalika, Asha Garden,<br>Nr Patel R Mart, Subhash Rd,<br>Dombivli West<br><br><b>Contact No. : 9820854690 / 9619016682</b></div><br>You can view your order in <b>My Orders</b>.";
+      localStorage.setItem("lastOrderNo", orderNo);
+      document.getElementById("myPhone").value = phone;
+      window.scrollTo(0,0);
+    });
+  });
+}
+render();updateShopBanner();
+</script>
+<script>
+window.onload = function(){
+  var savedName = localStorage.getItem("sthalikaName");
+  var savedMobile = localStorage.getItem("sthalikaMobile");
+  if(savedName && savedMobile){
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('shopPage').style.display = 'block';
+  }
+}
+function customerLogin(){
+  var name = document.getElementById('loginName').value.trim();
+  var mobile = document.getElementById('loginMobile').value.trim();
+  if(name == "" || mobile.length < 10){
+    alert("Please enter your Name and valid 10 digit Mobile Number");
+  } else {
+    localStorage.setItem("sthalikaName", name);
+    localStorage.setItem("sthalikaMobile", mobile);
+    customersRef.child(mobile).set({name: name, phone: mobile});
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('shopPage').style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>
