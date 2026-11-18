@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sthalika - My Shop</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16a34a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sthalika">
+<link rel="apple-touch-icon" href="icon-512.png">
+<link rel="icon" href="icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -121,7 +129,6 @@ let dbRef = firebase.database().ref("orders");
 let counterRef = firebase.database().ref("orderCounter");
 let itemsRef = firebase.database().ref("shopItems");
 let customersRef = firebase.database().ref("customers");
-// FIX: Ab koi purani default list nahi hai. Sirf Firebase se list aayegi. Owner = Customer, 100% same.
 let items = [];
 let cart = JSON.parse(localStorage.getItem("myCart")||"[]");
 let activeCat="All";
@@ -135,7 +142,6 @@ setInterval(updateShopBanner,30000);
 itemsRef.on("value", function(snap){
   let data = snap.val();
   if(data){ items = Object.keys(data).map(k=>{let o=data[k]; o._key=k; return o;}); } else { items = []; }
-  // Purana cart saaf karo agar usme ab delete hua item hai
   let validIds = items.map(i=>String(i.id));
   let newCart = cart.filter(c=> validIds.includes(String(c.id)));
   if(newCart.length != cart.length){ cart = newCart; save(); }
